@@ -1,0 +1,72 @@
+/* 这个文件用于存放额外的CSS样式，主要样式已在HTML文件的<style>标签中定义 */
+
+/* 响应式调整 */
+@media (max-width: 640px) {
+    .song-card {
+        font-size: 0.875rem;
+        padding: 0.5rem;
+    }
+    
+    h1 {
+        font-size: 2rem !important;
+    }
+    
+    h2 {
+        font-size: 1.5rem !important;
+    }
+}
+
+/* 加载动画 */
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.glass {
+    animation: fadeIn 0.5s ease-out forwards;
+}
+
+/* 确保所有弹窗内容在移动设备上正确显示 */
+@media (max-width: 480px) {
+    #copySuccessModal .glass-dark,
+    #randomSongModal .glass-dark {
+        margin: 0 1rem;
+        padding: 2rem 1.5rem;
+    }
+    
+    #randomSongModal h3 {
+        font-size: 1.5rem !important;
+    }
+    
+    #randomSongName {
+        font-size: 1.25rem !important;
+    }
+}
+
+/* 优化高对比度模式下的显示效果 */
+@media (prefers-contrast: high) {
+    .glass {
+        background: rgba(255, 255, 255, 0.35);
+        border: 1px solid rgba(255, 255, 255, 0.3);
+    }
+    
+    .glass-dark {
+        background: rgba(41, 47, 54, 0.85);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+    }
+}
+
+/* 减少动画效果的偏好设置 */
+@media (prefers-reduced-motion: reduce) {
+    * {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+    }
+    
+    /* 保留必要的交互反馈 */
+    .song-card:hover {
+        transform: none;
+        box-shadow: 0 5px 10px rgba(0, 0, 0, 0.1);
+    }
+}

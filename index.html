@@ -1,0 +1,281 @@
+<html lang="zh-CN"><head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>喵喵大王 - 歌单展示</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Font Awesome -->
+    <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+    <!-- GSAP 动画库 -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    <!-- 自定义 Tailwind 配置 -->
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#ff6b9d',
+                        secondary: '#4ecdc4',
+                        accent: '#ffe66d',
+                        dark: '#292f36',
+                        light: '#f7fff7'
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'system-ui', 'sans-serif'],
+                    },
+                    animation: {
+                        'float': 'float 6s ease-in-out infinite',
+                        'glow': 'glow 2s ease-in-out infinite alternate',
+                        'twinkle': 'twinkle 4s ease-in-out infinite',
+                    },
+                    keyframes: {
+                        float: {
+                            '0%, 100%': { transform: 'translateY(0)' },
+                            '50%': { transform: 'translateY(-10px)' },
+                        },
+                        glow: {
+                            '0%': { boxShadow: '0 0 5px rgba(255, 107, 157, 0.5)' },
+                            '100%': { boxShadow: '0 0 20px rgba(255, 107, 157, 0.8)' },
+                        },
+                        twinkle: {
+                            '0%, 100%': { opacity: 0.3 },
+                            '50%': { opacity: 1 },
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style type="text/tailwindcss">
+        @layer utilities {
+            .text-shadow {
+                text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+            }
+            .text-shadow-lg {
+                text-shadow: 3px 3px 6px rgba(0, 0, 0, 0.5);
+            }
+            .glass {
+                background: rgba(255, 255, 255, 0.25);
+                backdrop-filter: blur(10px);
+                -webkit-backdrop-filter: blur(10px);
+                border: 1px solid rgba(255, 255, 255, 0.18);
+            }
+            .glass-dark {
+                background: rgba(41, 47, 54, 0.7);
+                backdrop-filter: blur(10px);
+                -webkit-backdrop-filter: blur(10px);
+                border: 1px solid rgba(255, 255, 255, 0.08);
+            }
+            .star {
+                position: absolute;
+                background-color: white;
+                border-radius: 50%;
+                animation: twinkle 4s ease-in-out infinite;
+            }
+        }
+    </style>
+    <style>
+        body {
+            background-image: url('https://p11-flow-imagex-download-sign.byteimg.com/tos-cn-i-a9rns2rl98/9fa29a2dd3b0495cb409846e4b93362a.jpg~tplv-a9rns2rl98-24:720:720.image?lk3s=8e244e95&rcl=2026011806010762124F1309BAF2883DDC&rrcfp=8a172a1a&x-expires=1769292067&x-signature=6ojjxdPinTOoiQZk1h5JO7eY4X8%3D');
+            background-size: cover;
+            background-position: center;
+            background-attachment: fixed;
+            min-height: 100vh;
+            position: relative;
+            overflow-x: hidden;
+        }
+        
+        /* 自定义滚动条 */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        
+        ::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+        }
+        
+        ::-webkit-scrollbar-thumb {
+            background: rgba(255, 107, 157, 0.7);
+            border-radius: 10px;
+        }
+        
+        ::-webkit-scrollbar-thumb:hover {
+            background: rgba(255, 107, 157, 0.9);
+        }
+        
+        /* 歌曲卡片悬停效果 */
+        .song-card {
+            transition: all 0.3s ease;
+        }
+        
+        .song-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+            background: rgba(255, 255, 255, 0.35);
+        }
+        
+        /* 复制成功动画 */
+        @keyframes copySuccess {
+            0% { transform: scale(0.8); opacity: 0; }
+            50% { transform: scale(1.1); }
+            100% { transform: scale(1); opacity: 1; }
+        }
+        
+        /* 随机点歌动画 */
+        @keyframes surprise {
+            0% { transform: scale(0.5) rotate(0deg); opacity: 0; }
+            50% { transform: scale(1.2) rotate(5deg); }
+            75% { transform: scale(1.1) rotate(-3deg); }
+            100% { transform: scale(1) rotate(0deg); opacity: 1; }
+        }
+        
+        /* 星星背景 */
+        .stars-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 0;
+        }
+    </style>
+</head>
+<body class="font-sans text-light">
+    <!-- 星星背景容器 -->
+    <div class="stars-container" id="starsContainer"></div>
+    
+    <!-- 头部区域 -->
+    <header class="relative z-10 py-6 px-4 md:px-8">
+        <div class="container mx-auto">
+            <div class="glass rounded-xl p-6 shadow-lg">
+                <div class="flex flex-col md:flex-row justify-between items-center">
+                    <div class="mb-4 md:mb-0 text-center md:text-left">
+                        <h1 class="text-3xl md:text-4xl font-bold text-blue-500 animate-float">喵喵大王</h1>
+                        <p class="text-lg md:text-xl mt-2 text-shadow">治愈系弹唱选手</p>
+                    </div>
+                    <a href="https://live.bilibili.com/23913021?broadcast_type=0&amp;is_room_feed=1&amp;spm_id_from=333.1387.to_liveroom.0.click&amp;live_from=86002" target="_blank" class="bg-primary hover:bg-opacity-90 text-white font-bold py-3 px-6 rounded-full transition-all duration-300 transform hover:scale-105 hover:shadow-xl flex items-center justify-center w-full md:w-auto">
+                        <i class="fa fa-play-circle mr-2"></i> 前往直播间
+                    </a>
+                </div>
+            </div>
+        </div>
+    </header>
+    
+    <!-- 功能区 -->
+    <section class="relative z-10 py-6 px-4 md:px-8">
+        <div class="container mx-auto">
+            <div class="glass rounded-xl p-6 shadow-lg">
+                <div class="flex flex-col md:flex-row gap-4">
+                    <!-- 分类筛选 -->
+                    <div class="w-full md:w-1/4">
+                        <label for="categorySelect" class="block text-sm font-medium mb-2" style="color: rgb(13, 12, 12);">歌曲分类</label>
+                        <select id="categorySelect" class="w-full bg-gray-800 bg-opacity-80 text-white border border-gray-600 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                            <option value="all">全部歌曲</option>
+                            <option value="甜蜜爱恋">甜蜜爱恋</option>
+                            <option value="伤感抒情">伤感抒情</option>
+                            <option value="国风古韵">国风古韵</option>
+                            <option value="治愈暖心">治愈暖心</option>
+                            <option value="英文歌曲">英文歌曲</option>
+                            <option value="小众清新">小众清新</option>
+                            <option value="热血燃情">热血燃情</option>
+                        </select>
+                    </div>
+                    
+                    <!-- 搜索框 -->
+                    <div class="w-full md:w-2/4">
+                        <label for="searchInput" class="block text-sm font-medium mb-2" style="color: rgb(13, 12, 12);">关键字搜索</label>
+                        <div class="flex">
+                            <input type="text" id="searchInput" placeholder="输入歌名搜索..." class="w-full bg-gray-800 bg-opacity-80 text-white border border-gray-600 rounded-l-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                            <button id="searchButton" class="bg-blue-500 hover:bg-opacity-90 text-white px-4 py-2 rounded-r-lg transition-all duration-300">
+                                <i class="fa fa-search"></i>
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <!-- 随机点歌按钮 -->
+                    <div class="w-full md:w-1/4">
+                        <label class="block text-sm font-medium mb-2 opacity-0">随机点歌</label>
+                        <button id="randomSongButton" class="w-full bg-accent hover:bg-opacity-90 text-dark font-bold py-2 px-4 rounded-lg transition-all duration-300 transform hover:scale-105 hover:shadow-xl animate-glow">
+                            <i class="fa fa-random mr-2"></i> 随机点歌
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- 提示语 -->
+                <div class="mt-4 text-center">
+                    <p class="text-sm text-white text-opacity-80" style="color: rgba(41, 41, 7, 0.8); font-weight: bold;">点击歌名即可复制文本，快来点歌吧</p>
+                </div>
+            </div>
+        </div>
+    </section>
+    
+    <!-- 歌单展示区 -->
+    <section class="relative z-10 py-6 px-4 md:px-8">
+        <div class="container mx-auto">
+            <div id="playlistContainer" class="space-y-8">
+                <!-- 歌单内容将通过JavaScript动态生成 -->
+            </div>
+        </div>
+    </section>
+    
+    <!-- 底部区域 -->
+    <footer class="relative z-10 py-6 px-4 md:px-8 mt-8">
+        <div class="container mx-auto">
+            <div class="glass rounded-xl p-4 text-center">
+                <p>© 2026 喵喵大王应援会 | 歌单展示网站</p>
+            </div>
+        </div>
+    </footer>
+    
+    <!-- 复制成功提示弹窗 -->
+    <div id="copySuccessModal" class="fixed inset-0 flex items-center justify-center z-50 hidden">
+        <div class="absolute inset-0 bg-black bg-opacity-50" id="modalOverlay"></div>
+        <div class="glass-dark rounded-xl p-8 max-w-md w-full mx-4 shadow-2xl relative z-10 transform transition-all duration-300">
+            <div class="text-center">
+                <div class="inline-flex items-center justify-center w-16 h-16 rounded-full bg-green-500 bg-opacity-20 text-green-400 mb-4">
+                    <i class="fa fa-check-circle text-3xl"></i>
+                </div>
+                <h3 class="text-2xl font-bold mb-2" style="font-size: 16px;">复制成功</h3>
+                <p class="mb-4"><span id="copiedSongName" class="font-bold text-primary" style="font-size: 24px;">有点甜</span></p>
+                <p>快前往直播间点歌吧</p>
+                <button id="closeCopyModal" class="mt-6 bg-primary hover:bg-opacity-90 text-white font-bold py-2 px-6 rounded-full transition-all duration-300">
+                    知道了
+                </button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- 随机点歌惊喜弹窗 -->
+    <div id="randomSongModal" class="fixed inset-0 flex items-center justify-center z-50 hidden">
+        <div class="absolute inset-0 bg-black bg-opacity-70" id="randomModalOverlay"></div>
+        <div class="glass-dark rounded-xl p-8 max-w-lg w-full mx-4 shadow-2xl relative z-10 transform transition-all duration-300">
+            <div class="text-center">
+                <div class="inline-flex items-center justify-center w-20 h-20 rounded-full bg-accent bg-opacity-20 text-accent mb-6">
+                    <i class="fa fa-star text-4xl animate-pulse"></i>
+                </div>
+                <h3 class="text-3xl font-bold mb-4 text-accent" style="font-size: 18px;">恭喜你抽中巨好听的歌曲！</h3>
+                <p class="text-xl mb-6"><span id="randomSongName" class="font-bold text-primary text-2xl"></span></p>
+                <p class="mb-6">已复制歌名，快前往直播间点歌吧</p>
+                <button id="closeRandomModal" class="bg-accent hover:bg-opacity-90 text-dark font-bold py-3 px-8 rounded-full transition-all duration-300 text-lg">
+                    太棒了
+                </button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- 返回顶部按钮 -->
+    <button id="backToTopButton" class="fixed bottom-6 right-6 bg-primary hover:bg-opacity-90 text-white w-12 h-12 rounded-full flex items-center justify-center shadow-lg transition-all duration-300 transform hover:scale-110 z-40 opacity-0 invisible">
+        <i class="fa fa-arrow-up"></i>
+    </button>
+    
+    <!-- 音频元素 -->
+    <audio id="surpriseSound" preload="auto">
+        <source src="https://assets.mixkit.co/active_storage/sfx/2000/2000-preview.mp3" type="audio/mpeg">
+    </audio>
+    
+    <!-- JavaScript -->
+    <script src="script.js"></script>
+
+</body></html>
