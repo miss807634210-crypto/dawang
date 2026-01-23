@@ -76,13 +76,26 @@
     </style>
     <style>
         body {
-            background-image: url('https://p11-flow-imagex-download-sign.byteimg.com/tos-cn-i-a9rns2rl98/9fa29a2dd3b0495cb409846e4b93362a.jpg~tplv-a9rns2rl98-24:720:720.image?lk3s=8e244e95&rcl=2026011806010762124F1309BAF2883DDC&rrcfp=8a172a1a&x-expires=1769292067&x-signature=6ojjxdPinTOoiQZk1h5JO7eY4X8%3D');
             background-size: cover;
             background-position: center;
             background-attachment: fixed;
             min-height: 100vh;
             position: relative;
             overflow-x: hidden;
+        }
+        
+        /* 电脑端和平板端 - 横版背景 */
+        @media (min-width: 640px) {
+            body {
+                background-image: url('https://p26-flow-imagex-download-sign.byteimg.com/tos-cn-i-a9rns2rl98/2cff42afbc694d09906113829d917faf.jpg~tplv-a9rns2rl98-24:720:720.image?lk3s=8e244e95&rcl=2026012321180047C4508340A981073384&rrcfp=8a172a1a&x-expires=1769779080&x-signature=uXp%2Fw95SrVrcFrVKV4eZ8hm4bKI%3D');
+            }
+        }
+        
+        /* 手机端 - 竖版背景 */
+        @media (max-width: 639px) {
+            body {
+                background-image: url('https://p11-flow-imagex-download-sign.byteimg.com/tos-cn-i-a9rns2rl98/8c119fc2be5c4f39a0d4c7505481ebf4.png~tplv-a9rns2rl98-24:720:720.image?lk3s=8e244e95&rcl=2026012321180047C4508340A981073384&rrcfp=8a172a1a&x-expires=1769779080&x-signature=%2B4ru9BOfMSnf%2Bqs6dqAXrkXzXzs%3D');
+            }
         }
         
         /* 自定义滚动条 */
